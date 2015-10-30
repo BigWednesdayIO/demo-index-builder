@@ -8,7 +8,7 @@ const elasticClient = new elasticsearch.Client({
   host: 'http://localhost:9200'
 });
 
-const fieldsToIndex = ['name', 'brand', 'category', 'description', 'long_description', 'supplier'];
+const fieldsToIndex = ['name', 'brand', 'category', 'description', 'long_description'];
 
 const settings = {
   searchable_fields: ['name', 'category', 'brand'],
@@ -19,7 +19,14 @@ const indexBatch = hits => {
   const requests = [];
 
   hits.forEach(hit => {
-    requests.push({action: 'upsert', body: _.pick(hit._source, fieldsToIndex), objectID: hit._id});
+    const product = _.pick(hit._source, fieldsToIndex);
+
+    for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
+      const supplierProduct = _.clone(product);
+      supplierProduct.supplier = supplier.name;
+
+      requests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${hit._id}`});
+    }
   });
 
   var options = {
@@ -73,7 +80,7 @@ request.put(createSettingsOptions).then(() => {
           }
 
           processed += response.hits.hits.length;
-          console.log(`Indexed ${processed}/${total} documents.`)
+          console.log(`Indexed ${processed}/${total} products.`)
         })
         .catch(err => {
           console.error('Indexing error. Aborting.')
@@ -87,7 +94,7 @@ request.put(createSettingsOptions).then(() => {
     }
     else {
       total = response.hits.total;
-      console.log(`${total} documents to index...`);
+      console.log(`${total} products to index...`);
     }
 
     scrolling = true;
