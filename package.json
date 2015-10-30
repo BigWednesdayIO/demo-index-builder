@@ -1,0 +1,16 @@
+{
+  "name": "elastic_convert",
+  "version": "1.0.0",
+  "description": "",
+  "main": "elastic_convert.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "elasticsearch": "^8.2.0",
+    "lodash": "^3.10.1",
+    "request-promise": "^1.0.2"
+  }
+}
