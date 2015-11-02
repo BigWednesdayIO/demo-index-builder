@@ -12,7 +12,7 @@ const fieldsToIndex = ['name', 'brand', 'category', 'description', 'long_descrip
 
 const settings = {
   searchable_fields: ['name', 'category', 'brand'],
-  facet_fields: ['category', 'brand']
+  facet_fields: ['supplier', 'category', 'brand']
 };
 
 const indexBatch = hits => {
