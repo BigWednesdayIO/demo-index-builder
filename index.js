@@ -43,7 +43,8 @@ Promise.all([
                   "brand.raw": [
                     ".",
                     "Delivery Charge (Fri Same Day)",
-                    "Delivery Charge (Off Day)"
+                    "Delivery Charge (Off Day)",
+                    "VAT"
                   ]
                 }
               }
