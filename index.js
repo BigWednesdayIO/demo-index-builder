@@ -34,7 +34,23 @@ Promise.all([
       scroll: '30s',
       search_type: 'scan',
       type: ['product'],
-      q: '*'
+      body: {
+        "query": {
+          "bool": {
+            "must_not": [
+              {
+                "terms": {
+                  "brand.raw": [
+                    ".",
+                    "Delivery Charge (Fri Same Day)",
+                    "Delivery Charge (Off Day)"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
     }, function getMoreUntilDone(err, response) {
       if (err) {
         console.error('Retrieval error. Aborting.')
