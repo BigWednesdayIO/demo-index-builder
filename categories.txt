@@ -1,0 +1,28 @@
+412 - Food, Beverages & Tobacco
+413 - Food, Beverages & Tobacco > Beverages
+499676 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages
+414 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Beer
+6761 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Cider
+5725 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Cocktail Mixes
+5887 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Flavoured Alcoholic Beverages
+421 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Wine
+417 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits
+2364 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Brandy
+1671 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Gin
+2933 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Liqueurs
+2605 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Rum
+2107 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Vodka
+1926 - Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Whisky
+8036 - Food, Beverages & Tobacco > Beverages > Fruit-Flavoured Drinks
+2628 - Food, Beverages & Tobacco > Beverages > Fizzy Drinks
+2887 - Food, Beverages & Tobacco > Beverages > Juice
+5723 - Food, Beverages & Tobacco > Beverages > Sports & Energy Drinks
+420 - Food, Beverages & Tobacco > Beverages > Water
+111 - Business & Industrial
+5863 - Business & Industrial > Advertising & Marketing
+536 - Home & Garden
+630 - Home & Garden > Household Supplies
+623 - Home & Garden > Household Supplies > Household Cleaning Supplies
+4973 - Home & Garden > Household Supplies > Household Cleaning Supplies > Household Cleaning Products
+632 - Hardware
+502975 - Hardware > Fuel Containers & Tanks
