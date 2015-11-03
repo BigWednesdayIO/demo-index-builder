@@ -161,10 +161,20 @@ const getCategory = (category, subcategory) => {
   throw new Error(`Un-mapped category/subcategory ${category}/${subcategory}`);
 };
 
+const buildCategoryHierachy = code => {
+  if (!code) {
+    return [];
+  }
+
+  const levels = code.split('.');
+  return levels.map((level, index) => levels.slice(0, index + 1).join('.'));
+};
+
 const buildProduct = source => {
   const product = _.pick(source, fieldsToIndex);
   const category = getCategory(source.category, source.subcategory);
   product.category_code = category.code;
+  product.category_hierachy = buildCategoryHierachy(category.code);
   product.category_desc = category.desc;
   return product;
 };
