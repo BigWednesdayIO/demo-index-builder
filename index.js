@@ -7,7 +7,7 @@ const request = require('request-promise');
 const ProductsIndex = require('./products_index');
 const SuggestionsIndex = require('./suggestions_index');
 
-const apiBaseUrl = 'https://local.bigwednesday.io:8081/1';
+const apiBaseUrl = 'https://api.bigwednesday.io/1/search';
 
 const productsIndex = new ProductsIndex(apiBaseUrl, '8N*b3i[EX[s*zQ%');
 const suggestionsIndex = new SuggestionsIndex(apiBaseUrl, '8N*b3i[EX[s*zQ%');
