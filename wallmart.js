@@ -6,19 +6,31 @@ const _ = require('lodash');
 const ProductsIndex = require('./products_index');
 const productsIndex = new ProductsIndex('https://api.bigwednesday.io/1/search', '8N*b3i[EX[s*zQ%');
 
-const wallmartCategories = ['1115193_1071965_1149384', '1115193_1071965_1001719'];
+const wallmartCategories = ['1229749_1086977_1086987', '1229749_1086977_1086990'];
 const apiKey = 'zvu7f5zhqckaecazm3765jjw';
 const walmartBaseUrl = 'http://api.walmartlabs.com';
 
+const categories = require('./categories.json');
+const categoryMappers = [{
+  match: {categoryNode: '1229749_1086977_1086987'},
+  mapsTo: '4973',
+}, {
+  match: {categoryNode: '1229749_1086977_1086990'},
+  mapsTo: '2530',
+}];
+
 const buildProduct = source => {
+  const categoryMapper = _.find(categoryMappers, mapper => _.matches(mapper.match)(source));
+  const category = categoryMapper ? categories[categoryMapper.mapsTo] : {};
+
   return {
     name: source.name,
     brand: source.brandName,
     description: source.shortDescription,
     long_description: source.longDescription,
     supplier: 'Wallmart',
-    category_code: '',
-    category_desc: ''
+    category_code: category.hierachy,
+    category_desc: category.description
   }
 };
 
