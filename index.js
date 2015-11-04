@@ -5,6 +5,7 @@ const _ = require('lodash');
 const ProductsIndex = require('./products_index');
 const SuggestionsIndex = require('./suggestions_index');
 const pubDemoDataIndexer = require('./indexers/pub_demo_data_indexer');
+const bestBuyIndexer = require('./indexers/best_buy_indexer');
 
 const apiBaseUrl = 'http://10.35.65.188:32768';
 
@@ -28,6 +29,10 @@ Promise.all([
 .then(() => {
   console.log('Indexing pub demo data');
   return pubDemoDataIndexer(productsIndex, suggestionsIndex);
+})
+.then(() => {
+  console.log('Indexing Best Buy data');
+  return bestBuyIndexer(productsIndex);
 })
 .catch(err => {
   console.error('Error. Aborting.');
