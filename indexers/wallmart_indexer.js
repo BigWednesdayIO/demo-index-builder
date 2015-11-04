@@ -7,7 +7,15 @@ const wallmartCategories = ['1229749_1086977_1086987', '1229749_1086977_1086990'
 const apiKey = 'zvu7f5zhqckaecazm3765jjw';
 const walmartBaseUrl = 'http://api.walmartlabs.com';
 
-module.exports = function(productsIndex) {
+const stripSpecialCharacters = sourceValue => (sourceValue || '').replace(/[\uFFF0-\uFFFF]*/g, '');
+
+const normaliseString = sourceValue => {
+  return (sourceValue || '')
+            .replace(/[\uFFF0-\uFFFF]*/g, '') // Special characters
+            .replace(/\s+/g, ' ');            // Whitespace
+};
+
+module.exports = function(productsIndex, suggestionsIndex) {
   const categories = require('../categories.json');
 
   const categoryMap = [
@@ -25,30 +33,35 @@ module.exports = function(productsIndex) {
     const category = categoryMapper ? categories[categoryMapper.mapTo] : {};
 
     return {
-      name: source.name,
-      brand: source.brandName,
-      description: source.shortDescription,
-      long_description: source.longDescription,
+      name: normaliseString(source.name),
+      brand: normaliseString(source.brandName),
+      description: normaliseString(source.shortDescription),
+      long_description: normaliseString(source.longDescription),
       supplier: 'Wallmart',
       category_code: category.hierachy,
-      category_desc: category.name
+      category_desc: category.name,
+      price: source.salePrice
     }
   };
 
   const addBatchToIndex = response => {
     if (response && response.items) {
       const requests = response.items
-                        .map(sourceProduct => ({
+                        .map(source => ({id: source.itemId, body: buildProduct(source)}))
+                        .filter(source => !((source.body.brandName || '').startsWith('test_')) && source.body.category_code)
+                        .map(source => ({
                           action: 'upsert',
-                          body: buildProduct(sourceProduct),
-                          objectID: sourceProduct.itemId.toString()
+                          body: source.body,
+                          objectID: source.id.toString()
                         }));
 
-      return productsIndex
-              .indexProductBatch(requests)
-              .then(() => {
-                console.log(`Indexed ${response.items.length} wallmart products`);
-              });
+      return Promise.all([
+        productsIndex.indexProductBatch(requests),
+        suggestionsIndex.indexProductBatch(_.map(requests, 'body'))
+      ])
+      .then(() => {
+        console.log(`Indexed ${response.items.length} wallmart products`);
+      });
     }
   }
 
