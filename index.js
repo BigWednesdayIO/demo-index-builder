@@ -1,6 +1,9 @@
 'use strict';
 
+const fs = require('fs');
+
 const _ = require('lodash');
+const request = require('request-promise');
 
 const ProductsIndex = require('./products_index');
 const SuggestionsIndex = require('./suggestions_index');
@@ -26,6 +29,13 @@ Promise.all([
     suggestionsIndex.create(),
     productsIndex.create()
   ]);
+})
+.then(() => {
+  console.log('Getting categories');
+  return request({uri: 'https://raw.githubusercontent.com/BigWednesdayIO/categories-api/master/categories.json', json: true})
+            .then(categories => {
+              fs.writeFileSync('./categories.json', JSON.stringify(categories));
+            });
 })
 .then(() => {
   console.log('Indexing pub demo data');
