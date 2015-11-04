@@ -11,13 +11,7 @@ const stripPatterns = [
   '1.*per outlet', // 1 kit/deal per outlet, 1 per outlet
 ];
 
-const removePatterns = [
-  'DELIVERY',
-  'FREE'
-];
-
 const stripRegex = new RegExp(stripPatterns.join('|'), 'gm');
-const removeRegex = new RegExp(removePatterns.join('|'), 'gm');
 
 const cleanProductName = function(name) {
   return name
@@ -61,14 +55,9 @@ class SuggestionsIndex {
   }
 
   indexProductBatch(products) {
-    const requests = _(products)
-      .pluck('_source')
-      .map(source => cleanProductName(source['name']))
-      .value()
-      .filter(name => !removeRegex.test(name) && name !== 'POINT')
-      .map(name => {
-        return {action: 'create', body: {query: name}};
-      });
+    const requests = products.map(product => {
+      return {action: 'create', body: {query: cleanProductName(product.name)}};
+    });
 
     return request.post({
       uri: `${this._apiBaseUrl}/batch`,

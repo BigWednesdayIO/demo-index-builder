@@ -43,7 +43,7 @@ Promise.all([
 })
 .then(() => {
   console.log('Indexing Best Buy data');
-  return bestBuyIndexer(productsIndex);
+  return bestBuyIndexer(productsIndex, suggestionsIndex);
 })
 .then(() => {
   console.log('Indexing Wallmart data');
