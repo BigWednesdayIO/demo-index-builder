@@ -61,10 +61,7 @@ class SuggestionsIndex {
   }
 
   indexProductBatch(products) {
-    const requests = _(products)
-      .pluck('_source')
-      .map(source => cleanProductName(source['name']))
-      .value()
+    const requests = products.map(product => cleanProductName(product.name))
       .filter(name => !removeRegex.test(name) && name !== 'POINT')
       .map(name => {
         return {action: 'create', body: {query: name}};

@@ -226,7 +226,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
 
         result = Promise.all([
           productsIndex.indexProductBatch(productIndexingRequests),
-          suggestionsIndex.indexProductBatch(products)
+          suggestionsIndex.indexProductBatch(_.map(productIndexingRequests, 'body'))
         ])
         .then(bulkResponse => {
           if (bulkResponse.errors) {

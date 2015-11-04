@@ -32,7 +32,7 @@ Promise.all([
 })
 .then(() => {
   console.log('Indexing Best Buy data');
-  return bestBuyIndexer(productsIndex);
+  return bestBuyIndexer(productsIndex, suggestionsIndex);
 })
 .catch(err => {
   console.error('Error. Aborting.');
