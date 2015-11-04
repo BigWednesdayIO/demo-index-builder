@@ -22,7 +22,7 @@ const categoryMap = [
 
 const batchSize = 25;
 
-module.exports = function(productsIndex) {
+module.exports = function(productsIndex, suggestionsIndex) {
   return new Promise((resolve, reject) => {
     MongoClient.connect('mongodb://localhost:27017/bestbuy', function(err, db) {
       if (err) {
@@ -32,38 +32,39 @@ module.exports = function(productsIndex) {
       let batch = [];
       let totalIndexed = 0;
 
-      const toBatchUpsertRequest = function(product, enc, next) {
-        const request = {
-          action: 'upsert',
+      const buildProduct = function(bestBuyProduct, enc, next) {
+        const product = {
           body: {
-            name: product.name,
-            brand: product.manufacturer,
-            description: product.shortDescription,
-            long_description: product.longDescription,
+            name: bestBuyProduct.name,
+            brand: bestBuyProduct.manufacturer,
+            description: bestBuyProduct.shortDescription,
+            long_description: bestBuyProduct.longDescription,
+            price: bestBuyProduct.salePrice ,
+            was_price: bestBuyProduct.onSale ? bestBuyProduct.regularPrice : null,
             supplier: 'Best Buy'
           },
-          objectID: product.sku.toString()
+          objectID: bestBuyProduct.sku.toString()
         };
 
-        const productCategories = product.categoryPath;
+        const productCategories = bestBuyProduct.categoryPath;
         productCategories.reverse();
 
         for(const category of productCategories) {
           const mappedCategory = _.find(categoryMap, {bestbuy: category.id});
 
           if (mappedCategory) {
-            request.body.category_code = mappedCategory.google_code;
-            request.body.category_desc = mappedCategory.google_desc;
+            product.body.category_code = mappedCategory.google_code;
+            product.body.category_desc = mappedCategory.google_desc;
             break;
           }
         }
 
-        this.push(request);
+        this.push(product);
         next();
       };
 
-      const batchRequests = function(request, enc, next) {
-        batch.push(request);
+      const batchProducts = function(product, enc, next) {
+        batch.push(product);
 
         if (batch.length === batchSize) {
           this.push(batch);
@@ -82,17 +83,24 @@ module.exports = function(productsIndex) {
       };
 
       const indexBatch = function(batch, enc, next) {
-        productsIndex.indexProductBatch(batch)
-          .then(() => {
-            totalIndexed += batch.length;
-            console.log(`Indexed ${totalIndexed} products from Best Buy`);
-            next();
-          }, next);
+        const indexProductRequests = _.map(batch, product => {
+          return {action: 'upsert', body: product.body, objectID: product.objectID};
+        });
+
+        Promise.all([
+          productsIndex.indexProductBatch(indexProductRequests),
+          suggestionsIndex.indexProductBatch(_.map(batch, 'body'))
+        ])
+        .then(() => {
+          totalIndexed += batch.length;
+          console.log(`Indexed ${totalIndexed} products from Best Buy`);
+          next();
+        }, next);
       };
 
       db.collection('products').find({'categoryPath.id': {$in: _.pluck(categoryMap, 'bestbuy')}})
-        .pipe(through2.obj(toBatchUpsertRequest))
-        .pipe(through2.obj(batchRequests, endBatching))
+        .pipe(through2.obj(buildProduct))
+        .pipe(through2.obj(batchProducts, endBatching))
         .pipe(through2.obj(indexBatch, () => {
           db.close();
         }))
