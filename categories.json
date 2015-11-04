@@ -91,9 +91,21 @@
     "description": "Household Cleaning Products",
     "hierachy": "536.630.623.4973"
   },
+  "7330": {
+    "description": "All-Purpose Cleaners",
+    "hierachy": "536.630.623.4973.7330"
+  },
   "2530": {
     "description": "Household Paper Products",
     "hierachy": "536.630.2530"
+  },
+  "624": {
+    "description": "Facial Tissues",
+    "hierachy": "536.630.2530.624"
+  },
+  "629": {
+    "description": "Toilet Paper",
+    "hierachy": "536.630.2530.629"
   },
   "632": {
     "description": "Hardware",

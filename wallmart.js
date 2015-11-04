@@ -11,17 +11,18 @@ const apiKey = 'zvu7f5zhqckaecazm3765jjw';
 const walmartBaseUrl = 'http://api.walmartlabs.com';
 
 const categories = require('./categories.json');
-const categoryMappers = [{
-  match: {categoryNode: '1229749_1086977_1086987'},
-  mapsTo: '4973',
-}, {
-  match: {categoryNode: '1229749_1086977_1086990'},
-  mapsTo: '2530',
-}];
+const categoryMap = [
+  {match: {categoryNode: '1229749_1086977_1086987'}, mapTo: '4973'},
+  {match: {categoryNode: '1229749_1086977_1086990'}, mapTo: '2530'},
+  {match: {categoryNode: '1115193_1073264_1149383'}, mapTo: '2530'},
+  {match: {categoryNode: '1115193_1073264_1149384'}, mapTo: '629'},
+  {match: {categoryNode: '1115193_1071966_1025741'}, mapTo: '623'},
+  {match: {categoryNode: '1115193_1073264_1149389'}, mapTo: '624'},
+  {match: {categoryNode: '1115193_1071966_1072133'}, mapTo: '7330'}];
 
 const buildProduct = source => {
-  const categoryMapper = _.find(categoryMappers, mapper => _.matches(mapper.match)(source));
-  const category = categoryMapper ? categories[categoryMapper.mapsTo] : {};
+  const categoryMapper = _.find(categoryMap, mapper => _.matches(mapper.match)(source));
+  const category = categoryMapper ? categories[categoryMapper.mapTo] : {};
 
   return {
     name: source.name,
