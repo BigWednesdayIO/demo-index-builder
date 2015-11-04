@@ -6,6 +6,7 @@ const ProductsIndex = require('./products_index');
 const SuggestionsIndex = require('./suggestions_index');
 const pubDemoDataIndexer = require('./indexers/pub_demo_data_indexer');
 const bestBuyIndexer = require('./indexers/best_buy_indexer');
+const wallmartIndexer = require('./indexers/wallmart_indexer');
 
 const apiBaseUrl = 'https://api.bigwednesday.io/1/search';
 
@@ -33,6 +34,10 @@ Promise.all([
 .then(() => {
   console.log('Indexing Best Buy data');
   return bestBuyIndexer(productsIndex);
+})
+.then(() => {
+  console.log('Indexing Wallmart data');
+  return wallmartIndexer(productsIndex);
 })
 .catch(err => {
   console.error('Error. Aborting.');
