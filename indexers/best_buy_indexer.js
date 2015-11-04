@@ -103,6 +103,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
         .pipe(through2.obj(batchProducts, endBatching))
         .pipe(through2.obj(indexBatch, () => {
           db.close();
+          resolve();
         }))
         .on('error', err => {
           console.error('Error indexing Best Buy data');
