@@ -6,7 +6,7 @@ const _ = require('lodash');
 const ProductsIndex = require('./products_index');
 const productsIndex = new ProductsIndex('https://api.bigwednesday.io/1/search', '8N*b3i[EX[s*zQ%');
 
-const categoryId = '976759';
+const wallmartCategories = ['1115193_1071965_1149384', '1115193_1071965_1001719'];
 const apiKey = 'zvu7f5zhqckaecazm3765jjw';
 const walmartBaseUrl = 'http://api.walmartlabs.com';
 
@@ -56,8 +56,10 @@ const indexItems = function indexItems (nextPageUri) {
   });
 }
 
-indexItems(`/v1/paginated/items?category=${categoryId}&apiKey=${apiKey}`)
-  .then(() => {
-    console.log(`Indexing of Wallmart products in category ${categoryId} complete`);
-  });
-
+// Indexes categories concurrently
+wallmartCategories.forEach(categoryId => {
+  indexItems(`/v1/paginated/items?category=${categoryId}&apiKey=${apiKey}`)
+    .then(() => {
+      console.log(`Indexing of Wallmart products in category ${categoryId} complete`);
+    });
+});
