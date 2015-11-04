@@ -27,3 +27,5 @@ build/Release
 node_modules
 
 suggestions.txt
+
+categories.json
