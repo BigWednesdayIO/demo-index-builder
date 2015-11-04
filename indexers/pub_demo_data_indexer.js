@@ -162,17 +162,50 @@ const getCategory = (category, subcategory) => {
   throw new Error(`Un-mapped category/subcategory ${category}/${subcategory}`);
 };
 
-const buildProduct = source => {
+const buildProduct = (source, id, priceResults) => {
   const product = _.pick(source, ['name', 'brand', 'description', 'long_description']);
   const category = getCategory(source.category, source.subcategory);
   product.category_code = category.code;
   product.category_desc = category.desc;
+
+  const mapToOtherBrand = !product.brand || product.brand === 'Other Brands' || product.brand.indexOf('Finest Cask Rotation') === 0;
+  product.brand = mapToOtherBrand ? 'Other' : product.brand;
+
+  const priceResponse = _.find(priceResults.responses, response => {
+    return _.find(response.hits.hits, hit => {
+      return hit._source.productid === id;
+    });
+  });
+
+  product.price = Math.round(priceResponse.hits.hits[0]._source.customerlistprice * 100) / 100;
+  product.was_price = null;
+
   return product;
 };
 
 let scrolling = false;
 let processed = 0;
 let total = 0;
+
+const getPrices = productIds => {
+  const priceQueries = productIds.map(id => {
+    return {
+      query: {
+        term: {productid: id}
+      },
+      size: 1
+    }
+  });
+
+  const searches = [];
+
+  priceQueries.forEach(query => {
+    searches.push({index: 'demo', _type: 'price'}, query);
+  });
+
+  return elasticClient.msearch({body: searches});
+};
+
 
 module.exports = function(productsIndex, suggestionsIndex) {
   return new Promise((resolve, reject) => {
@@ -220,36 +253,11 @@ module.exports = function(productsIndex, suggestionsIndex) {
       if (response.hits.hits.length > 0) {
         const products = response.hits.hits;
 
-        const priceQueries = _.map(products, '_id').map(id => {
-          return {
-            query: {
-              term: {productid: id}
-            },
-            size: 1
-          }
-        });
-
-        const searches = [];
-        priceQueries.forEach(query => {
-          searches.push({index: 'demo', _type: 'price'}, query);
-        });
-
-        result = elasticClient.msearch({body: searches}).then(priceResults => {
+        result = getPrices(_.map(products, '_id')).then(priceResults => {
           const productIndexingRequests = [];
 
           products.forEach(p => {
-            const product = buildProduct(p._source);
-            const mapToOtherBrand = !product.brand || product.brand === 'Other Brands' || product.brand.indexOf('Finest Cask Rotation') === 0;
-            product.brand = mapToOtherBrand ? 'Other' : product.brand;
-
-            const priceResponse = _.find(priceResults.responses, response => {
-              return _.find(response.hits.hits, hit => {
-                return hit._source.productid === p._id;
-              });
-            });
-
-            product.price = Math.round(priceResponse.hits.hits[0]._source.customerlistprice * 100) / 100;
-            product.was_price = null;
+            const product = buildProduct(p._source, p._id, priceResults);
 
             for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
               const supplierProduct = _.clone(product);
