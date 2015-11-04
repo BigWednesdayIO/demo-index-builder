@@ -7,6 +7,8 @@ const wallmartCategories = ['1229749_1086977_1086987', '1229749_1086977_1086990'
 const apiKey = 'zvu7f5zhqckaecazm3765jjw';
 const walmartBaseUrl = 'http://api.walmartlabs.com';
 
+const stripSpecialCharacters = sourceValue => (sourceValue || '').replace(/[\uFFF0-\uFFFF]*/g, '');
+
 module.exports = function(productsIndex) {
   const categories = require('../categories.json');
 
@@ -25,10 +27,10 @@ module.exports = function(productsIndex) {
     const category = categoryMapper ? categories[categoryMapper.mapTo] : {};
 
     return {
-      name: source.name,
-      brand: source.brandName,
-      description: source.shortDescription,
-      long_description: source.longDescription,
+      name: stripSpecialCharacters(source.name),
+      brand: stripSpecialCharacters(source.brandName),
+      description: stripSpecialCharacters(source.shortDescription),
+      long_description: stripSpecialCharacters(source.longDescription),
       supplier: 'Wallmart',
       category_code: category.hierachy,
       category_desc: category.name
@@ -38,10 +40,12 @@ module.exports = function(productsIndex) {
   const addBatchToIndex = response => {
     if (response && response.items) {
       const requests = response.items
-                        .map(sourceProduct => ({
+                        .map(source => ({id: source.itemId, body: buildProduct(source)}))
+                        .filter(source => !((source.body.brandName || '').startsWith('test_')) && source.body.category_code)
+                        .map(source => ({
                           action: 'upsert',
-                          body: buildProduct(sourceProduct),
-                          objectID: sourceProduct.itemId.toString()
+                          body: source.body,
+                          objectID: source.id.toString()
                         }));
 
       return productsIndex
