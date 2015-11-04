@@ -9,6 +9,12 @@ const walmartBaseUrl = 'http://api.walmartlabs.com';
 
 const stripSpecialCharacters = sourceValue => (sourceValue || '').replace(/[\uFFF0-\uFFFF]*/g, '');
 
+const normaliseString = sourceValue => {
+  return (sourceValue || '')
+            .replace(/[\uFFF0-\uFFFF]*/g, '') // Special characters
+            .replace(/\s+/g, ' ');            // Whitespace
+};
+
 module.exports = function(productsIndex, suggestionsIndex) {
   const categories = require('../categories.json');
 
@@ -27,10 +33,10 @@ module.exports = function(productsIndex, suggestionsIndex) {
     const category = categoryMapper ? categories[categoryMapper.mapTo] : {};
 
     return {
-      name: stripSpecialCharacters(source.name),
-      brand: stripSpecialCharacters(source.brandName),
-      description: stripSpecialCharacters(source.shortDescription),
-      long_description: stripSpecialCharacters(source.longDescription),
+      name: normaliseString(source.name),
+      brand: normaliseString(source.brandName),
+      description: normaliseString(source.shortDescription),
+      long_description: normaliseString(source.longDescription),
       supplier: 'Wallmart',
       category_code: category.hierachy,
       category_desc: category.name,
