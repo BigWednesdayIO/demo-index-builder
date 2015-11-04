@@ -33,7 +33,8 @@ module.exports = function(productsIndex) {
       long_description: stripSpecialCharacters(source.longDescription),
       supplier: 'Wallmart',
       category_code: category.hierachy,
-      category_desc: category.name
+      category_desc: category.name,
+      price: source.salePrice
     }
   };
 
