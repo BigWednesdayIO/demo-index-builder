@@ -24,7 +24,7 @@ const batchSize = 25;
 
 module.exports = function(productsIndex) {
   return new Promise((resolve, reject) => {
-    MongoClient.connect('mongodb://localhost:32771/bestbuy', function(err, db) {
+    MongoClient.connect('mongodb://localhost:27017/bestbuy', function(err, db) {
       if (err) {
         throw new Error('Couldn\'t connect to mongodb bestbuy database');
       }
