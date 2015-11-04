@@ -1,8 +1,8 @@
 {
-  "name": "elastic_convert",
+  "name": "demo-index-builder",
   "version": "1.0.0",
   "description": "",
-  "main": "elastic_convert.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,6 +11,8 @@
   "dependencies": {
     "elasticsearch": "^8.2.0",
     "lodash": "^3.10.1",
-    "request-promise": "^1.0.2"
+    "mongodb": "^2.0.47",
+    "request-promise": "^1.0.2",
+    "through2": "^2.0.0"
   }
 }
