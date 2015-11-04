@@ -219,6 +219,8 @@ class ProductsIndex {
 
     products.forEach(p => {
       const product = buildProduct(p._source);
+      const mapToOtherBrand = !product.brand || product.brand === 'Other Brands' || product.brand.indexOf('Finest Cask Rotation') === 0;
+      product.brand = mapToOtherBrand ? 'Other' : product.brand;
 
       for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
         const supplierProduct = _.clone(product);
