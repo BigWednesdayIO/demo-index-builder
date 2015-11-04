@@ -184,6 +184,16 @@ module.exports = function(productsIndex, suggestionsIndex) {
       body: {
         "query": {
           "bool": {
+            "must": [
+              {
+                "has_child": {
+                  "type": "price",
+                  "query": {
+                    "match_all": {}
+                  }
+                }
+              }
+            ],
             "must_not": [
               {
                 "terms": {
