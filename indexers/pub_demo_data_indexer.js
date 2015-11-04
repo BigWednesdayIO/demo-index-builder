@@ -209,25 +209,52 @@ module.exports = function(productsIndex, suggestionsIndex) {
 
       if (response.hits.hits.length > 0) {
         const products = response.hits.hits;
-        const productIndexingRequests = [];
 
-        products.forEach(p => {
-          const product = buildProduct(p._source);
-          const mapToOtherBrand = !product.brand || product.brand === 'Other Brands' || product.brand.indexOf('Finest Cask Rotation') === 0;
-          product.brand = mapToOtherBrand ? 'Other' : product.brand;
-
-          for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
-            const supplierProduct = _.clone(product);
-            supplierProduct.supplier = supplier.name;
-
-            productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${p._id}`});
+        const priceQueries = _.map(products, '_id').map(id => {
+          return {
+            query: {
+              term: {productid: id}
+            },
+            size: 1
           }
         });
 
-        result = Promise.all([
+        const searches = [];
+        priceQueries.forEach(query => {
+          searches.push({index: 'demo', _type: 'price'}, query);
+        });
+
+        result = elasticClient.msearch({body: searches}).then(priceResults => {
+          const productIndexingRequests = [];
+
+          products.forEach(p => {
+            const product = buildProduct(p._source);
+            const mapToOtherBrand = !product.brand || product.brand === 'Other Brands' || product.brand.indexOf('Finest Cask Rotation') === 0;
+            product.brand = mapToOtherBrand ? 'Other' : product.brand;
+
+            const priceResponse = _.find(priceResults.responses, response => {
+              return _.find(response.hits.hits, hit => {
+                return hit._source.productid === p._id;
+              });
+            });
+
+            product.price = Math.round(priceResponse.hits.hits[0]._source.customerlistprice * 100) / 100;
+            product.was_price = null;
+
+            for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
+              const supplierProduct = _.clone(product);
+              supplierProduct.supplier = supplier.name;
+
+              productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${p._id}`});
+            }
+          });
+
+          return productIndexingRequests;
+        })
+        .then(productIndexingRequests => Promise.all([
           productsIndex.indexProductBatch(productIndexingRequests),
           suggestionsIndex.indexProductBatch(_.map(productIndexingRequests, 'body'))
-        ])
+        ]))
         .then(bulkResponse => {
           if (bulkResponse.errors) {
             console.error('Batch indexing error.');
@@ -239,7 +266,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
         })
         .catch(err => {
           console.error('Batch indexing error.');
-          return reject(bulkResponse.errors);
+          return reject(err);
         });
       }
       else if (scrolling) {
