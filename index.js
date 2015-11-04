@@ -47,7 +47,7 @@ Promise.all([
 })
 .then(() => {
   console.log('Indexing Wallmart data');
-  return wallmartIndexer(productsIndex);
+  return wallmartIndexer(productsIndex, suggestionsIndex);
 })
 .catch(err => {
   console.error('Error. Aborting.');

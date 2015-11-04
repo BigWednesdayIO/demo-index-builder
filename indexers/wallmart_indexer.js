@@ -9,7 +9,7 @@ const walmartBaseUrl = 'http://api.walmartlabs.com';
 
 const stripSpecialCharacters = sourceValue => (sourceValue || '').replace(/[\uFFF0-\uFFFF]*/g, '');
 
-module.exports = function(productsIndex) {
+module.exports = function(productsIndex, suggestionsIndex) {
   const categories = require('../categories.json');
 
   const categoryMap = [
@@ -49,11 +49,13 @@ module.exports = function(productsIndex) {
                           objectID: source.id.toString()
                         }));
 
-      return productsIndex
-              .indexProductBatch(requests)
-              .then(() => {
-                console.log(`Indexed ${response.items.length} wallmart products`);
-              });
+      return Promise.all([
+        productsIndex.indexProductBatch(requests),
+        suggestionsIndex.indexProductBatch(_.map(requests, 'body'))
+      ])
+      .then(() => {
+        console.log(`Indexed ${response.items.length} wallmart products`);
+      });
     }
   }
 
