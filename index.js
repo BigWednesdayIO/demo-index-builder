@@ -7,7 +7,7 @@ const SuggestionsIndex = require('./suggestions_index');
 const pubDemoDataIndexer = require('./indexers/pub_demo_data_indexer');
 const bestBuyIndexer = require('./indexers/best_buy_indexer');
 
-const apiBaseUrl = 'http://10.35.65.188:32768';
+const apiBaseUrl = 'https://api.bigwednesday.io/1/search';
 
 const productsIndex = new ProductsIndex(apiBaseUrl, '8N*b3i[EX[s*zQ%');
 const suggestionsIndex = new SuggestionsIndex(apiBaseUrl, '8N*b3i[EX[s*zQ%');
