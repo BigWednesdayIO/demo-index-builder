@@ -39,11 +39,8 @@ module.exports = function(productsIndex, suggestionsIndex) {
             brand: bestBuyProduct.manufacturer,
             description: bestBuyProduct.shortDescription,
             long_description: bestBuyProduct.longDescription,
-<<<<<<< HEAD
             price: bestBuyProduct.salePrice ,
             was_price: bestBuyProduct.onSale ? bestBuyProduct.regularPrice : null,
-=======
->>>>>>> index product names as suggestions for bestbuy products
             supplier: 'Best Buy'
           },
           objectID: bestBuyProduct.sku.toString()
