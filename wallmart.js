@@ -14,7 +14,7 @@ const buildProduct = source => {
   return {
     name: source.name,
     brand: source.brandName,
-    desription: source.shortDescription,
+    description: source.shortDescription,
     long_description: source.longDescription,
     supplier: 'Wallmart',
     category_code: '',
