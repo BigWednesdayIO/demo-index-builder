@@ -48,7 +48,7 @@ class SuggestionsIndex {
       headers: this._apiHeaders,
       body: {
         searchable_fields: ['query'],
-        facet_fields: []
+        facets: []
       },
       json: true
     });
