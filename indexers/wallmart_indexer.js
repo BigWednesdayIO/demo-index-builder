@@ -43,7 +43,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
       category_desc: category.name,
       price: source.salePrice,
       was_price: null,
-      thumbnail_image_url: source.thumbnailImage
+      thumbnail_image_url: source.mediumImage
     }
   };
 
@@ -51,7 +51,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
     if (response && response.items) {
       const requests = response.items
                         .map(source => ({id: source.itemId, body: buildProduct(source)}))
-                        .filter(source => !((source.body.brandName || '').startsWith('test_')) && source.body.category_code)
+                        .filter(source => !((source.body.brand || '').startsWith('test_')) && source.body.category_code)
                         .map(source => ({
                           action: 'upsert',
                           body: source.body,
