@@ -43,7 +43,7 @@ class ProductsIndex {
       headers: this._apiHeaders,
       body: {
         searchable_fields: ['name', 'category_desc', 'brand'],
-        facet_fields: ['supplier', 'category_code', 'brand']
+        facets: [{field: 'supplier', order: 'value'}, {field: 'category_code', order: 'count'}, {field: 'brand', order: 'value'}]
       },
       json: true
     });
