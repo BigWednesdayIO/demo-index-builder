@@ -42,7 +42,8 @@ module.exports = function(productsIndex, suggestionsIndex) {
       category_code: category.hierachy,
       category_desc: category.name,
       price: source.salePrice,
-      was_price: null
+      was_price: null,
+      thumbnail_image_url: source.thumbnailImage
     }
   };
 
