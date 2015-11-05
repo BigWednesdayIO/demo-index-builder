@@ -10,9 +10,10 @@ const walmartBaseUrl = 'http://api.walmartlabs.com';
 const stripSpecialCharacters = sourceValue => (sourceValue || '').replace(/[\uFFF0-\uFFFF]*/g, '');
 
 const normaliseString = sourceValue => {
-  return (sourceValue || '')
-            .replace(/[\uFFF0-\uFFFF]*/g, '') // Special characters
-            .replace(/\s+/g, ' ');            // Whitespace
+  const normalised = (sourceValue || '')
+                      .replace(/[\uFFF0-\uFFFF]*/g, '') // Special characters
+                      .replace(/\s+/g, ' ');            // Whitespace
+  return normalised || null;
 };
 
 module.exports = function(productsIndex, suggestionsIndex) {
@@ -40,7 +41,9 @@ module.exports = function(productsIndex, suggestionsIndex) {
       supplier: 'Wallmart',
       category_code: category.hierachy,
       category_desc: category.name,
-      price: source.salePrice
+      price: source.salePrice,
+      was_price: null,
+      thumbnail_image_url: source.thumbnailImage
     }
   };
 

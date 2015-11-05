@@ -7,166 +7,44 @@ const elasticClient = new elasticsearch.Client({
   host: 'http://localhost:9200'
 });
 
-const getCategory = (category, subcategory) => {
-  if (_.include(['AleStout', 'Lager', 'FinestCask'], category)) {
-    return {
-      code: '412.413.499676.414',
-      desc: 'Beer'
-    };
-  }
+const categories = require('../categories.json');
 
-  if (category === 'Wine') {
-    return {
-      code: '412.413.499676.421',
-      desc: 'Wine'
-    };
-  }
-
-  if (category === 'Spirits') {
-    if (subcategory === 'Liqueurs') {
-      return {
-        code: '412.413.499676.417.2933',
-        desc: 'Liqueurs'
-      };
-    }
-    if (subcategory === 'Vodka') {
-      return {
-        code: '412.413.499676.417.2107',
-        desc: 'Vodka'
-      };
-    }
-    if (subcategory === 'Brandy') {
-      return {
-        code: '412.413.499676.417.2364',
-        desc: 'Brandy'
-      };
-    }
-    if (subcategory === 'Sambuca') {
-      return {
-        code: '412.413.499676.417.2933',
-        desc: 'Sambuca'
-      };
-    }
-    if (_.include(['White Rum', 'Dark and Golden Rum', 'Dark & Golden Rum'])) {
-      return {
-        code: '412.413.499676.417.2605',
-        desc: 'Rum'
-      };
-    }
-    if (_.include(['Blended Whisky', 'Malt Whisky', 'Imported Whisky'])) {
-      return {
-        code: '412.413.499676.417.1926',
-        desc: '1926'
-      };
-    }
-    if (subcategory === 'Gin') {
-      return {
-        code: '412.413.499676.417.1671',
-        desc: 'Gin'
-      };
-    }
-
-    return {
-      code: '417',
-      desc: 'Liquor & Spirits'
-    };
-  }
-
-  if (category === 'SoftDrinks') {
-    if (subcategory === 'Energy Drinks') {
-      return {
-        code: '412.413.5723',
-        desc: 'Sports & Energy Drinks'
-      };
-    }
-    if (subcategory === 'Juices') {
-      return {
-        code: '412.413.2887',
-        desc: 'Juice'
-      };
-    }
-    if (subcategory === 'Mixers') {
-      return {
-        code: '412.413.499676.5725',
-        desc: 'Cocktail Mixes'
-      };
-    }
-    if (subcategory === 'Water') {
-      return {
-        code: '412.413.420',
-        desc: 'Water'
-      };
-    }
-    if (subcategory === 'Cordials') {
-      return {
-        code: '412.413.8036',
-        desc: 'Fruit-Flavoured Drinks'
-      };
-    }
-    if (subcategory === 'Canned Drinks') {
-      return {
-        code: '412.413.2628',
-        desc: 'Fizzy Drinks'
-      };
-    }
-
-    return {
-      code: '412.413',
-      desc: 'Beverages'
-    };
-  }
-
-  if (category === 'Cider') {
-    return {
-      code: '412.413.499676.6761',
-      desc: 'Cider'
-    };
-  }
-
-  if (category === 'POS') {
-    return {
-      code: '111.5863',
-      desc: 'Advertising & Marketing'
-    };
-  }
-
-  if (category === 'ReadyToDrink') {
-    return {
-      code: '412.413.499676.5887',
-      desc: 'Flavoured Alcoholic Beverages'
-    };
-  }
-
-  if (category === 'Sundries') {
-    if (subcategory === 'Co2') {
-      return {
-        code: '632.502975',
-        desc: 'Fuel Containers & Tanks'
-      };
-    }
-    if (subcategory === 'Cleaning Products') {
-      return {
-        code: '536.630.623.4973',
-        desc: 'Household Cleaning Products'
-      };
-    }
-  }
-
-  if (category === 'Other') {
-    return {
-      code: '',
-      subcategory: ''
-    };
-  }
-
-  throw new Error(`Un-mapped category/subcategory ${category}/${subcategory}`);
-};
+const categoryMap = [
+  {match: {category: 'AleStout'}, mapTo: '414'},
+  {match: {category: 'Lager'}, mapTo: '414'},
+  {match: {category: 'FinestCask'}, mapTo: '414'},
+  {match: {category: 'Wine'}, mapTo: '421'},
+  {match: {category: 'Spirits', subcategory: 'Liqueurs'}, mapTo: '2933'},
+  {match: {category: 'Spirits', subcategory: 'Vodka'}, mapTo: '2107'},
+  {match: {category: 'Spirits', subcategory: 'Brandy'}, mapTo: '2364'},
+  {match: {category: 'Spirits', subcategory: 'Sambuca'}, mapTo: '2933'},
+  {match: {category: 'Spirits', subcategory: 'White Rum'}, mapTo: '2605'},
+  {match: {category: 'Spirits', subcategory: 'Dark and Golden Rum'}, mapTo: '2605'},
+  {match: {category: 'Spirits', subcategory: 'Dark & Golden Rum'}, mapTo: '2605'},
+  {match: {category: 'Spirits', subcategory: 'Blended Whisky'}, mapTo: '1926'},
+  {match: {category: 'Spirits', subcategory: 'Malt Whisky'}, mapTo: '1926'},
+  {match: {category: 'Spirits', subcategory: 'Imported Whisky'}, mapTo: '1926'},
+  {match: {category: 'Spirits', subcategory: 'Gin'}, mapTo: '1671'},
+  {match: {category: 'SoftDrinks', subcategory: 'Energy Drinks'}, mapTo: '5723'},
+  {match: {category: 'SoftDrinks', subcategory: 'Juices'}, mapTo: '2887'},
+  {match: {category: 'SoftDrinks', subcategory: 'Mixers'}, mapTo: '5725'},
+  {match: {category: 'SoftDrinks', subcategory: 'Water'}, mapTo: '420'},
+  {match: {category: 'SoftDrinks', subcategory: 'Cordials'}, mapTo: '8036'},
+  {match: {category: 'SoftDrinks', subcategory: 'Canned Drinks'}, mapTo: '2628'},
+  {match: {category: 'Cider'}, mapTo: '6761'},
+  {match: {category: 'POS'}, mapTo: '5863'},
+  {match: {category: 'ReadyToDrink'}, mapTo: '5887'},
+  {match: {category: 'Sundries', subcategory: 'Co2'}, mapTo: '502975'},
+  {match: {category: 'Sundries', subcategory: 'Cleaning Products'}, mapTo: '4973'}
+];
 
 const buildProduct = (source, id, priceResults) => {
   const product = _.pick(source, ['name', 'brand', 'description', 'long_description']);
-  const category = getCategory(source.category, source.subcategory);
-  product.category_code = category.code;
-  product.category_desc = category.desc;
+
+  const categoryMapper = _.find(categoryMap, mapper => _.matches(mapper.match)(source));
+  const category = categoryMapper ? categories[categoryMapper.mapTo] : {};
+  product.category_code = category.hierachy;
+  product.category_desc = category.name;
 
   const mapToOtherBrand = !product.brand || product.brand === 'Other Brands' || product.brand.indexOf('Finest Cask Rotation') === 0;
   product.brand = mapToOtherBrand ? 'Other' : product.brand;
@@ -256,14 +134,14 @@ module.exports = function(productsIndex, suggestionsIndex) {
         result = getPrices(_.map(products, '_id')).then(priceResults => {
           const productIndexingRequests = [];
 
-          products.forEach(p => {
-            const product = buildProduct(p._source, p._id, priceResults);
-
+          products
+          .map(p => ({id: p._id, body: buildProduct(p._source, p._id, priceResults)}))
+          .filter(p => p.body.category_code)
+          .forEach(product => {
             for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
-              const supplierProduct = _.clone(product);
+              const supplierProduct = _.clone(product.body);
               supplierProduct.supplier = supplier.name;
-
-              productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${p._id}`});
+              productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${product.id}`});
             }
           });
 
