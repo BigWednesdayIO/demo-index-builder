@@ -51,7 +51,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
     if (response && response.items) {
       const requests = response.items
                         .map(source => ({id: source.itemId, body: buildProduct(source)}))
-                        .filter(source => !((source.body.brandName || '').startsWith('test_')) && source.body.category_code)
+                        .filter(source => !((source.body.brand || '').startsWith('test_')) && source.body.category_code)
                         .map(source => ({
                           action: 'upsert',
                           body: source.body,
