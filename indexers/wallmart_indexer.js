@@ -43,7 +43,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
       category_desc: category.name,
       price: source.salePrice,
       was_price: null,
-      thumbnail_image_url: source.thumbnailImage
+      thumbnail_image_url: source.mediumImage
     }
   };
 
