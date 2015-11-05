@@ -51,7 +51,7 @@ class ProductsIndex {
 
   indexProductBatch(indexingRequests) {
     const requests = indexingRequests.map(r => {
-      r.body.category_hierachy = buildCategoryHierachy(r.body.category_code);
+      r.body.category_hierarchy = buildCategoryHierachy(r.body.category_code);
       return r;
     });
 
