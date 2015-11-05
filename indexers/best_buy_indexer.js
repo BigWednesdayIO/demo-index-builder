@@ -41,6 +41,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
             long_description: bestBuyProduct.longDescription,
             price: bestBuyProduct.salePrice ,
             was_price: bestBuyProduct.onSale ? bestBuyProduct.regularPrice : null,
+            thumbnail_image_url: bestBuyProduct.largeFrontImage || bestBuyProduct.largeImage || bestBuyProduct.mediumImage,
             supplier: 'Best Buy'
           },
           objectID: bestBuyProduct.sku.toString()

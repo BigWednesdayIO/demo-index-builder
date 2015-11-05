@@ -49,6 +49,8 @@ const buildProduct = (source, id, priceResults) => {
   const mapToOtherBrand = !product.brand || product.brand === 'Other Brands' || product.brand.indexOf('Finest Cask Rotation') === 0;
   product.brand = mapToOtherBrand ? 'Other' : product.brand;
 
+  product.thumbnail_image_url = `assets/images/products/${id[0]}/${id[1]}/${id[2]}/${id}_A_p.jpg`;
+
   const priceResponse = _.find(priceResults.responses, response => {
     return _.find(response.hits.hits, hit => {
       return hit._source.productid === id;
