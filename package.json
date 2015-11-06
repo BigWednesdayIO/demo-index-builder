@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.0.5",
+    "cloudinary": "^1.2.5",
     "elasticsearch": "^8.2.0",
     "lodash": "^3.10.1",
     "mongodb": "^2.0.47",

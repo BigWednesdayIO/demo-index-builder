@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const uploadImages = require('./pub_images_uploader');
 const elasticsearch = require('elasticsearch');
 
 const elasticClient = new elasticsearch.Client({
@@ -134,6 +135,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
 
         result = getPrices(_.map(products, '_id')).then(priceResults => {
           const productIndexingRequests = [];
+          const productIds = [];
 
           products
           .map(p => ({id: p._id, body: buildProduct(p._source, p._id, priceResults)}))
@@ -144,13 +146,15 @@ module.exports = function(productsIndex, suggestionsIndex) {
               supplierProduct.supplier = supplier.name;
               productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${product.id}`});
             }
+            productIds.push(product.id);
           });
 
-          return productIndexingRequests;
+          return {indexingRequests: productIndexingRequests, ids: productIds};
         })
-        .then(productIndexingRequests => Promise.all([
-          productsIndex.indexProductBatch(productIndexingRequests),
-          suggestionsIndex.indexProductBatch(_.map(productIndexingRequests, 'body'))
+        .then(products => Promise.all([
+          productsIndex.indexProductBatch(products.indexingRequests),
+          suggestionsIndex.indexProductBatch(_.map(products.indexingRequests, 'body')),
+          uploadImages(products.ids)
         ]))
         .then(_.spread((productsResponse, suggestionsResponse) => {
           if (productsResponse.errors) {
