@@ -86,7 +86,6 @@ const getPrices = productIds => {
   return elasticClient.msearch({body: searches});
 };
 
-
 module.exports = function(productsIndex, suggestionsIndex) {
   return new Promise((resolve, reject) => {
     elasticClient.search({
@@ -153,15 +152,19 @@ module.exports = function(productsIndex, suggestionsIndex) {
           productsIndex.indexProductBatch(productIndexingRequests),
           suggestionsIndex.indexProductBatch(_.map(productIndexingRequests, 'body'))
         ]))
-        .then(bulkResponse => {
-          if (bulkResponse.errors) {
-            console.error('Batch indexing error.');
-            return reject(bulkResponse.errors);
+        .then(_.spread((productsResponse, suggestionsResponse) => {
+          if (productsResponse.errors) {
+            console.error('Product indexing error.');
+            return reject(productsResponse.errors);
+          }
+          if (suggestionsResponse.errors) {
+            console.error('Suggestions indexing error.');
+            return reject(suggestionsResponse.errors);
           }
 
           processed += response.hits.hits.length;
           console.log(`Indexed ${processed}/${total} products from Elasticsearch.`)
-        })
+        }))
         .catch(err => {
           console.error('Batch indexing error.');
           return reject(err);
