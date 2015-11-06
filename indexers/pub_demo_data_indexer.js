@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const uploadImages = require('./pub_images_uploader');
 const elasticsearch = require('elasticsearch');
 
 const elasticClient = new elasticsearch.Client({
@@ -49,7 +50,7 @@ const buildProduct = (source, id, priceResults) => {
   const mapToOtherBrand = !product.brand || product.brand === 'Other Brands' || product.brand.indexOf('Finest Cask Rotation') === 0;
   product.brand = mapToOtherBrand ? 'Other' : product.brand;
 
-  product.thumbnail_image_url = `assets/images/products/${id[0]}/${id[1]}/${id[2]}/${id}_A_p.jpg`;
+  product.thumbnail_image_url = `https://res.cloudinary.com/dc3gcqic2/image/upload/${id}_A_p.jpg`
 
   const priceResponse = _.find(priceResults.responses, response => {
     return _.find(response.hits.hits, hit => {
@@ -85,7 +86,6 @@ const getPrices = productIds => {
 
   return elasticClient.msearch({body: searches});
 };
-
 
 module.exports = function(productsIndex, suggestionsIndex) {
   return new Promise((resolve, reject) => {
@@ -135,6 +135,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
 
         result = getPrices(_.map(products, '_id')).then(priceResults => {
           const productIndexingRequests = [];
+          const productIds = [];
 
           products
           .map(p => ({id: p._id, body: buildProduct(p._source, p._id, priceResults)}))
@@ -145,23 +146,29 @@ module.exports = function(productsIndex, suggestionsIndex) {
               supplierProduct.supplier = supplier.name;
               productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${product.id}`});
             }
+            productIds.push(product.id);
           });
 
-          return productIndexingRequests;
+          return {indexingRequests: productIndexingRequests, ids: productIds};
         })
-        .then(productIndexingRequests => Promise.all([
-          productsIndex.indexProductBatch(productIndexingRequests),
-          suggestionsIndex.indexProductBatch(_.map(productIndexingRequests, 'body'))
+        .then(products => Promise.all([
+          productsIndex.indexProductBatch(products.indexingRequests),
+          suggestionsIndex.indexProductBatch(_.map(products.indexingRequests, 'body')),
+          uploadImages(products.ids)
         ]))
-        .then(bulkResponse => {
-          if (bulkResponse.errors) {
-            console.error('Batch indexing error.');
-            return reject(bulkResponse.errors);
+        .then(_.spread((productsResponse, suggestionsResponse) => {
+          if (productsResponse.errors) {
+            console.error('Product indexing error.');
+            return reject(productsResponse.errors);
+          }
+          if (suggestionsResponse.errors) {
+            console.error('Suggestions indexing error.');
+            return reject(suggestionsResponse.errors);
           }
 
           processed += response.hits.hits.length;
           console.log(`Indexed ${processed}/${total} products from Elasticsearch.`)
-        })
+        }))
         .catch(err => {
           console.error('Batch indexing error.');
           return reject(err);

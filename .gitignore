@@ -29,3 +29,7 @@ node_modules
 suggestions.txt
 
 categories.json
+
+pub_images/*
+
+!pub_images/.keep
