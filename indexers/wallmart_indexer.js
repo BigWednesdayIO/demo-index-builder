@@ -38,7 +38,7 @@ module.exports = function(productsIndex, suggestionsIndex) {
       brand: normaliseString(source.brandName),
       description: normaliseString(source.shortDescription),
       long_description: normaliseString(source.longDescription),
-      supplier: 'Wallmart',
+      supplier: 'Walmart',
       category_code: category.hierachy,
       category_desc: category.name,
       price: source.salePrice,

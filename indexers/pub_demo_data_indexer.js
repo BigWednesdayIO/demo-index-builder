@@ -1,6 +1,8 @@
 'use strict';
 
 const _ = require('lodash');
+const bluebird = require('bluebird');
+
 const uploadImages = require('./pub_images_uploader');
 const elasticsearch = require('elasticsearch');
 
@@ -57,8 +59,7 @@ const buildProduct = (source, id, priceResults) => {
       return hit._source.productid === id;
     });
   });
-
-  product.price = Math.round(priceResponse.hits.hits[0]._source.customerlistprice * 100) / 100;
+  product.price = priceResponse.hits.hits[0]._source.customerlistprice;
   product.was_price = null;
 
   return product;
@@ -131,47 +132,61 @@ module.exports = function(productsIndex, suggestionsIndex) {
       let result = Promise.resolve({});
 
       if (response.hits.hits.length > 0) {
-        const products = response.hits.hits;
-
-        result = getPrices(_.map(products, '_id')).then(priceResults => {
-          const productIndexingRequests = [];
-          const productIds = [];
-
-          products
-          .map(p => ({id: p._id, body: buildProduct(p._source, p._id, priceResults)}))
-          .filter(p => p.body.category_code)
-          .forEach(product => {
-            for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
-              const supplierProduct = _.clone(product.body);
-              supplierProduct.supplier = supplier.name;
-              productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${product.id}`});
-            }
-            productIds.push(product.id);
-          });
-
-          return {indexingRequests: productIndexingRequests, ids: productIds};
+        result = bluebird.filter(response.hits.hits, product => {
+          return uploadImages.productHasImage(product._id).then(() => true, () => false);
         })
-        .then(products => Promise.all([
-          productsIndex.indexProductBatch(products.indexingRequests),
-          suggestionsIndex.indexProductBatch(_.map(products.indexingRequests, 'body')),
-          uploadImages(products.ids)
-        ]))
-        .then(_.spread((productsResponse, suggestionsResponse) => {
-          if (productsResponse.errors) {
-            console.error('Product indexing error.');
-            return reject(productsResponse.errors);
-          }
-          if (suggestionsResponse.errors) {
-            console.error('Suggestions indexing error.');
-            return reject(suggestionsResponse.errors);
+        .then(products => {
+          if (products.length === 0) {
+            return console.log(`Batch skipped due to missing product images.`);
           }
 
-          processed += response.hits.hits.length;
-          console.log(`Indexed ${processed}/${total} products from Elasticsearch.`)
-        }))
-        .catch(err => {
-          console.error('Batch indexing error.');
-          return reject(err);
+          return getPrices(_.map(products, '_id'))
+            .then(priceResults => {
+              const productIndexingRequests = [];
+              const productIds = [];
+
+              products
+                .map(p => ({id: p._id, body: buildProduct(p._source, p._id, priceResults)}))
+                  .filter(p => p.body.category_code)
+                  .forEach(product => {
+                    for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
+                      const supplierProduct = _.clone(product.body);
+                      supplierProduct.supplier = supplier.name;
+
+                      // introduce small price variance
+                      const adjustPrice = Math.random() > 0.5;
+                      const adjustedPrice = adjustPrice ? supplierProduct.price * 0.98 : supplierProduct.price;
+
+                      // ensure we only have 2 decimal places
+                      supplierProduct.price = Math.round(adjustedPrice * 100) / 100;
+
+                      productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${product.id}`});
+                    }
+                    productIds.push(product.id);
+                  });
+
+              return Promise.all([
+                productsIndex.indexProductBatch(productIndexingRequests),
+                suggestionsIndex.indexProductBatch(_.map(productIndexingRequests, 'body')),
+                uploadImages(productIds)
+              ]);
+            }).then(_.spread((productsResponse, suggestionsResponse) => {
+              if (productsResponse.errors) {
+                console.error('Product indexing error.');
+                return reject(productsResponse.errors);
+              }
+              if (suggestionsResponse.errors) {
+                console.error('Suggestions indexing error.');
+                return reject(suggestionsResponse.errors);
+              }
+
+              processed += response.hits.hits.length;
+              console.log(`Indexed ${processed}/${total} products from Elasticsearch.`)
+            }))
+            .catch(err => {
+              console.error('Batch indexing error.');
+              return reject(err);
+            });
         });
       }
       else if (scrolling) {
