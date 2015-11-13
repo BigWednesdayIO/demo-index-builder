@@ -15,32 +15,40 @@ const uploadImage = (path, id) => {
   });
 };
 
-module.exports = function uploadImages (productIds) {
-  const imageIds = productIds.map(id => `${id}_A_p`);
+const toImageId = productId => {
+  return `${productId}_A_p`;
+};
 
-  return new Promise((resolve, reject) => {
+const imagePath = imageId => {
+  return `./pub_images/${imageId[0]}/${imageId[1]}/${imageId[2]}/${imageId}.jpg`;
+};
+
+module.exports = function uploadImages (productIds) {
+  const imageIds = productIds.map(toImageId);
+
+  return new Promise(resolve => {
     cloudinary.api.resources_by_ids(imageIds, result => {
       const imagesToUpload = _.reject(imageIds, id => _.find(result.resources, {public_id: id}));
 
       const uploadJobs = imagesToUpload.map(imageId => {
-        return {id: imageId, path: `./pub_images/${imageId[0]}/${imageId[1]}/${imageId[2]}/${imageId}.jpg`};
+        return {id: imageId, path: imagePath(imageId)};
       });
 
-      return bluebird
-        .filter(uploadJobs, job => {
-          return stat(job.path).then(() => true, () => false);
-        })
-        .then(jobs => {
-          if (jobs.length) {
-            console.log(`Uploading images ${_.pluck(jobs, 'id')}`);
-          }
-
-          return Promise.all(jobs.map(job => uploadImage(job.path, job.id)));
-        })
-        .then(resolve, reject);
+      resolve(uploadJobs);
     });
+  })
+  .then(jobs => {
+    if (jobs.length) {
+      console.log(`Uploading images ${_.pluck(jobs, 'id')}`);
+    }
+
+    return Promise.all(jobs.map(job => uploadImage(job.path, job.id)));
   })
   .then(() => {
     console.log('Images uploaded');
   });
+};
+
+module.exports.productHasImage = function(productId) {
+  return stat(imagePath(toImageId(productId)));
 };

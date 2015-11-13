@@ -11,7 +11,7 @@ const pubDemoDataIndexer = require('./indexers/pub_demo_data_indexer');
 const bestBuyIndexer = require('./indexers/best_buy_indexer');
 const wallmartIndexer = require('./indexers/wallmart_indexer');
 
-const apiBaseUrl = 'https://api.bigwednesday.io/1/search';
+const apiBaseUrl = 'https://api.bigwednesday.io/1';
 
 const productsIndex = new ProductsIndex(apiBaseUrl, '8N*b3i[EX[s*zQ%');
 const suggestionsIndex = new SuggestionsIndex(apiBaseUrl, '8N*b3i[EX[s*zQ%');
