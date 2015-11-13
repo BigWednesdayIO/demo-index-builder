@@ -59,7 +59,7 @@ const buildProduct = (source, id, priceResults) => {
       return hit._source.productid === id;
     });
   });
-  product.price = Math.round(priceResponse.hits.hits[0]._source.customerlistprice * 100) / 100;
+  product.price = priceResponse.hits.hits[0]._source.customerlistprice;
   product.was_price = null;
 
   return product;
@@ -152,6 +152,14 @@ module.exports = function(productsIndex, suggestionsIndex) {
                     for(let supplier of [{name: 'Pub Taverns', idPrefix: 'p'}, {name: 'Beer & Wine Co', idPrefix: 'b'}]) {
                       const supplierProduct = _.clone(product.body);
                       supplierProduct.supplier = supplier.name;
+
+                      // introduce small price variance
+                      const adjustPrice = Math.random() > 0.5;
+                      const adjustedPrice = adjustPrice ? supplierProduct.price * 0.98 : supplierProduct.price;
+
+                      // ensure we only have 2 decimal places
+                      supplierProduct.price = Math.round(adjustedPrice * 100) / 100;
+
                       productIndexingRequests.push({action: 'upsert', body: supplierProduct, objectID: `${supplier.idPrefix}${product.id}`});
                     }
                     productIds.push(product.id);
